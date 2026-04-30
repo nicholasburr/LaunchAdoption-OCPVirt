@@ -40,9 +40,11 @@ This is the most common data structure. It connects a name (key) to a value.
 <!-- end list -->
 
 ```yaml
-name: "Web Server"
-state: present
-port: 80
+apiVersion: v1beta1
+kind: AgentConfig
+metadata: 
+  name: example
+rendezvousIP: 192.168.122.10
 ```
 
 ### 3. Lists (Arrays)
@@ -54,10 +56,13 @@ Lists are used when you have multiple items under one key (e.g., a list of packa
 <!-- end list -->
 
 ```yaml
-packages_to_install:
-  - httpd
-  - firewalld
-  - vim
+interfaces:
+  - name: ens3
+    macAddress: 52:54:00:d2:2a:66 
+  - name: ens4
+    macAddress: 52:54:00:d2:2a:67 
+  - name: ens5
+    macAddress: 52:54:00:d2:2a:68 
 ```
 
 ### 4. Comments
@@ -69,8 +74,9 @@ Comments are for humans. The automation engine ignores them. Use them to explain
 <!-- end list -->
 
 ```yaml
-# Ensure this server is always reachable
-ansible_host: 192.168.1.10
+# If a value is not specified, one address will be chosen from the static IP addresses.
+rendezvousIP: 192.168.122.10
+
 ```
 
 ### 5. Booleans (True/False)
@@ -79,18 +85,31 @@ Used for toggles like "admin access" or "service enabled."
 
 * Valid values: `true`, `false` (Best practice is lowercase).
 
-## Putting It Together (Ansible Context)
-
-Here is how those rules look in an Ansible Playbook from your future Ansible training.
+<!-- end list -->
 
 ```yaml
----                               # Start of file marker
-- name: Gather hostname           # List item (The Play)
-  hosts: all                      # Key-Value pair
-  tasks:                          # List of tasks starts here
-    - name: Run setup             # List item (The Task)
-      ansible.builtin.setup:      # Module call
-        filter: ansible_hostname  # Parameter (Key-Value)
+fips: true
+```
+
+## Putting It Together (Openshift Context)
+
+Here is how those rules look in an Openshift install config.
+
+```yaml
+---                                 # Start of file marker
+apiVersion: v1beta1
+kind: AgentConfig
+metadata: 
+  name: example
+fips: true
+rendezvousIP: 192.168.122.10
+interfaces:
+  - name: ens3
+    macAddress: 52:54:00:d2:2a:66 
+  - name: ens4
+    macAddress: 52:54:00:d2:2a:67 
+  - name: ens5
+    macAddress: 52:54:00:d2:2a:68
 ```
 
 ## Troubleshooting Tip
