@@ -2,7 +2,7 @@
 
 ## Foundational Goals and Why They Matter
 
-The goal of this foundational document is to build the core toolset and mindset required for an Automation Specialist. Before writing your first Ansible Playbook or using AAP, you must be comfortable with the tools and concepts that the platform is built on.
+The goal of this foundational document is to build the core toolset and mindset required for an Infrastructure Engineers. Before writing your frist Infrastructure as Code manifest and deploying it, you must be comfortable with the tools and concepts that Openshift and Openshift GitOps are built around.
 
 The learning path below explains *what* each foundational skill is and *why* it is critical for automation.
 
@@ -14,10 +14,10 @@ graph LR
     D --> E[Practice - Tie it all together];
 ```
 
-* **Introduce Concepts:** Grasp the high-level ideas of IaC (Infrastructure as Code) and DevOps. These are the core "why" philosophies, and AAP is the tool designed to implement them. Understanding this gives your work context.
-* **Use YAML Syntax:** Write YAML syntax and use a linter to verify it. YAML is the language of Ansible; everything you write (playbooks, inventories, etc.) is in YAML. Mastering its syntax is like learning the alphabet before writing a novel.
+* **Introduce Concepts:** Grasp the high-level ideas of IaC (Infrastructure as Code) and DevOps. These are the core "why" philosophies, and Openshift GitOps is the tool designed to implement them. Understanding this gives your work context.
+* **Use YAML Syntax:** Write YAML syntax and use a linter to verify it. YAML is one of the languages of Openshift; everything you write (manifest, values files, etc.) is in YAML. Mastering its syntax is like learning the alphabet before writing a novel.
 * **Configure Your IDE:** Set up VSCode as a professional automation editor. VSCode is your workshop. With the right extensions (like the Red Hat YAML linter), it catches your YAML syntax errors before you commit them to Git, saving you hours of troubleshooting.
-* **Use Version Control:** Experiment with basic git commands and workflows. Git is the "source of truth" for AAP. Your automation code (Ansible Playbooks) must be stored in Git, as AAP pulls code directly from it to run jobs. A basic workflow (clone, branch, commit, push) is a daily requirement.
+* **Use Version Control:** Experiment with basic git commands and workflows. Git is the "source of truth" for Openshift GitOps. Your code (Manifests) must be stored in Git, as Openshift GitOps pulls code directly from it to configure your Infrastructure. A basic workflow (clone, branch, commit, push) is a daily requirement.
 
 ## Independent Learning Path Recommendations
 
@@ -27,6 +27,7 @@ Build your toolset - learn some yaml, vscode, and git.  Then integrate the tools
 
 * [What is Infrastructure as Code (**IaC**)?](https://www.redhat.com/en/topics/automation/what-is-infrastructure-as-code-iac)
 * [What is **DevOps**?](https://www.redhat.com/en/topics/devops/what-is-devops)
+* [What is **Openshift GitOps**?](https://www.redhat.com/en/blog/announcing-openshift-gitops)
 
 ### YAML Essentials
 
@@ -74,7 +75,7 @@ While the guides provide full details, focus on understanding this core set of c
 | `git add [file]` | Stages a file, telling Git you want to include it in the next commit. | `git add .` (Stages all changed files) |
 | `git commit -m "..."` | Saves a "snapshot" of your staged changes to the repository's history. | `git commit -m "Add new inventory file"` |
 | `git pull` | Fetches the latest changes from the remote repository and merges them. | Keeps your local branch up-to-date. |
-| `git push` | Uploads your local commits to the remote repository. | Shares your work with the team and AAP. |
+| `git push` | Uploads your local commits to the remote repository. | Shares your work with the team and Openshift GitOps. |
 
 ### Hands-On Practice: Tying It All Together
 
