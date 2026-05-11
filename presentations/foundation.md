@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foundations of Git & YAML</title>
+  <!-- Red Hat Design Tokens -->
+  <link href="https://cdn.jsdelivr.net/npm/@rhds/tokens@3.0.2/css/global.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700;900&family=Red+Hat+Text:wght@400;500;700&family=Red+Hat+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-primary: #000000;
+      --bg-secondary: #1f1f1f;
+      --bg-surface: #292929;
+      --text-primary: #ffffff;
+      --text-secondary: #c7c7c7;
+      --text-muted: #a3a3a3;
+      --accent: #ee0000;
+      --accent-dark: #a60000;
+      --accent-light: #f56e6e;
+      --tag-border: #383838;
+      --font-heading: 'Red Hat Display', sans-serif;
+      --font-body: 'Red Hat Text', sans-serif;
+      --font-mono: 'Red Hat Mono', monospace;
+      --icon-filter: brightness(0) invert(1);
+      --icon-filter-accent: invert(12%) sepia(100%) saturate(10000%) hue-rotate(0deg) brightness(95%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .deck { height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; }
+
+    .slide {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      padding: var(--rh-space-4xl, 80px);
+      position: relative;
+      background-color: var(--bg-primary);
+      justify-content: center;
+    }
+
+    .slide.active { display: flex; }
+
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      right: -10%;
+      width: 60%;
+      height: 60%;
+      background: radial-gradient(ellipse, rgba(238,0,0,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* === TYPOGRAPHY === */
+    h1 {
+      font-family: var(--font-heading);
+      font-size: var(--rh-font-size-heading-2xl, 3rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: var(--rh-space-lg, 24px);
+      z-index: 1;
+    }
+
+    h2 {
+      font-family: var(--font-heading);
+      font-size: var(--rh-font-size-heading-lg, 2rem);
+      font-weight: 700;
+      margin-bottom: var(--rh-space-xl, 32px);
+      z-index: 1;
+    }
+
+    .accent-text { color: var(--accent); }
+
+    .subtitle {
+      font-size: var(--rh-font-size-body-text-xl, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 800px;
+      margin-bottom: var(--rh-space-2xl, 48px);
+      z-index: 1;
+    }
+
+    /* === COMPONENTS === */
+    .breadcrumb {
+      position: absolute;
+      top: var(--rh-space-2xl, 48px);
+      left: var(--rh-space-4xl, 80px);
+      display: flex;
+      align-items: center;
+      gap: var(--rh-space-md, 16px);
+      font-family: var(--font-mono);
+      font-size: var(--rh-font-size-body-text-xs, 0.75rem);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      z-index: 10;
+    }
+
+    .rh-logo { height: 28px; width: auto; }
+    .rh-logo.small { height: 20px; }
+
+    .rh-icon {
+      height: 64px;
+      width: 64px;
+      filter: var(--icon-filter);
+      margin-bottom: var(--rh-space-md, 16px);
+    }
+    .rh-icon.accent { filter: var(--icon-filter-accent); }
+    .rh-icon.xl { height: 96px; width: 96px; }
+
+    .tag-container { display: flex; gap: var(--rh-space-sm, 8px); margin-bottom: var(--rh-space-lg, 24px); z-index: 1; }
+
+    .tag {
+      padding: var(--rh-space-xs, 4px) var(--rh-space-md, 16px);
+      border: var(--rh-border-width-sm, 1px) solid var(--tag-border);
+      border-radius: var(--rh-border-radius-pill, 64px);
+      font-family: var(--font-mono);
+      font-size: var(--rh-font-size-body-text-xs, 0.75rem);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--rh-space-3xl, 64px); align-items: start; z-index: 1; }
+
+    ul { list-style: none; font-size: var(--rh-font-size-body-text-lg, 1.125rem); color: var(--text-secondary); }
+    li { margin-bottom: var(--rh-space-md, 16px); position: relative; padding-left: var(--rh-space-xl, 32px); }
+    li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+
+    .code-block {
+      background: var(--bg-secondary);
+      padding: var(--rh-space-lg, 24px);
+      border-left: var(--rh-border-width-lg, 3px) solid var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      white-space: pre;
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* === DIAGRAMS === */
+    .diagram-container { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 2rem; position: relative; z-index: 1; }
+    .diagram-node {
+      background: var(--bg-surface);
+      border: 1px solid var(--tag-border);
+      padding: var(--rh-space-lg, 24px);
+      border-radius: 4px;
+      text-align: center;
+      width: 20%;
+      box-shadow: var(--rh-box-shadow-md);
+    }
+    .diagram-node.accent { border-color: var(--accent); }
+    .diagram-node span { display: block; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .diagram-node strong { font-family: var(--font-heading); font-size: 1.1rem; }
+    .diagram-arrow { color: var(--accent); font-size: 1.5rem; font-weight: bold; }
+
+    .branch-diagram { position: relative; height: 150px; width: 100%; margin: 2rem 0; display: flex; align-items: center; justify-content: center; z-index: 1;}
+    .branch-line { position: absolute; height: 2px; background: var(--text-muted); width: 80%; top: 50%; z-index: 0;}
+    .commit-dot { width: 16px; height: 16px; background: var(--text-muted); border-radius: 50%; position: absolute; top: calc(50% - 7px); z-index: 2;}
+    .commit-dot.accent { background: var(--accent); }
+    .feature-line { position: absolute; height: 2px; background: var(--accent); width: 40%; top: 20%; left: 30%; border-radius: 2px; z-index: 1; }
+    .feature-curve-start { position: absolute; width: 20px; height: 45px; border-left: 2px solid var(--accent); border-top: 2px solid var(--accent); top: 20%; left: 30%; border-radius: 10px 0 0 0;}
+    .feature-curve-end { position: absolute; width: 20px; height: 45px; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); top: 20%; right: 30%; border-radius: 0 10px 0 0;}
+
+    /* === NAV === */
+    .controls { position: fixed; bottom: var(--rh-space-xl, 32px); left: var(--rh-space-4xl, 80px); right: var(--rh-space-4xl, 80px); display: flex; justify-content: space-between; align-items: center; z-index: 100; pointer-events: none; }
+    .nav-hint { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono); }
+    .progress { font-family: var(--font-mono); font-size: 0.875rem; color: var(--text-secondary); }
+    .current { color: var(--accent); font-weight: bold; }
+
+    /* === SIDE PANEL === */
+    .side-panel {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 450px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--tag-border);
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--rh-box-shadow-xl);
+    }
+    .side-panel.visible { transform: translateX(0); }
+
+    .panel-tabs {
+      display: flex;
+      background: var(--bg-primary);
+      border-bottom: 1px solid var(--tag-border);
+    }
+    .panel-tab {
+      flex: 1;
+      padding: var(--rh-space-md, 16px);
+      text-align: center;
+      cursor: pointer;
+      font-family: var(--font-heading);
+      font-weight: bold;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .panel-tab.active {
+      color: var(--text-primary);
+      border-bottom-color: var(--accent);
+      background: var(--bg-secondary);
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--rh-space-xl, 32px);
+      display: none;
+    }
+    .panel-content.active { display: block; }
+
+    .notes-view h3, .ai-view h3 { color: var(--accent); margin-bottom: 1rem; font-family: var(--font-heading); }
+
+    /* === AI COMPONENTS === */
+    .ai-tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--rh-space-md, 16px); margin-bottom: var(--rh-space-xl, 32px); }
+    .ai-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--tag-border);
+      color: var(--text-primary);
+      padding: var(--rh-space-sm, 8px);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .ai-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--bg-primary); }
+    .ai-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .chat-container {
+      background: var(--bg-primary);
+      border: 1px solid var(--tag-border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      height: 300px;
+    }
+    .chat-messages { flex: 1; overflow-y: auto; padding: var(--rh-space-md, 16px); font-size: 0.9rem; color: var(--text-secondary); }
+    .chat-input-area { display: flex; border-top: 1px solid var(--tag-border); padding: 8px; gap: 8px; }
+    .chat-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      outline: none;
+    }
+    .msg { margin-bottom: 12px; padding: 8px; border-radius: 6px; }
+    .msg.user { background: var(--bg-surface); align-self: flex-end; border-left: 2px solid var(--accent-light); }
+    .msg.ai { background: var(--bg-secondary); border-left: 2px solid var(--accent); color: var(--text-primary); }
+
+    .loading-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--accent-light);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .animate-in { opacity: 0; transform: translateY(20px); transition: all 0.6s ease-out; }
+    .slide.active .animate-in { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <div class="deck">
+    
+    <!-- SLIDE 1: TITLE -->
+    <div class="slide" data-notes="<h3>Presenter Notes</h3>Start with a bold opening. This deck builds the core foundation for Infrastructure Engineers. We move from the 'Why' to the 'Syntax' to the 'Engine'.">
+      <div class="breadcrumb">
+        <svg class="rh-logo small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 613 145"><path d="M127.47,83.49c12.51,0,30.61-2.58,30.61-17.46a14,14,0,0,0-.31-3.42l-7.45-32.36c-1.72-7.12-3.23-10.35-15.73-16.6C124.89,8.69,103.76.5,97.51.5,91.69.5,90,8,83.06,8c-6.68,0-11.64-5.6-17.89-5.6-6,0-9.91,4.09-12.93,12.5,0,0-8.41,23.72-9.49,27.16A6.43,6.43,0,0,0,42.53,44c0,9.22,36.3,39.45,84.94,39.45M160,72.07c1.73,8.19,1.73,9.05,1.73,10.13,0,14-15.74,21.77-36.43,21.77C78.54,104,37.58,76.6,37.58,58.49a18.45,18.45,0,0,1,1.51-7.33C22.27,52,.5,55,.5,74.22c0,31.48,74.59,70.28,133.65,70.28,45.28,0,56.7-20.48,56.7-36.65,0-12.72-11-27.16-30.83-35.78" fill="#e00"/><path d="M160,72.07c1.73,8.19,1.73,9.05,1.73,10.13,0,14-15.74,21.77-36.43,21.77C78.54,104,37.58,76.6,37.58,58.49a18.45,18.45,0,0,1,1.51-7.33l3.66-9.06A6.43,6.43,0,0,0,42.53,44c0,9.22,36.3,39.45,84.94,39.45,12.51,0,30.61-2.58,30.61-17.46a14,14,0,0,0-.31-3.42Z" fill="#fff"/><path d="M579.74,92.8c0,11.89,7.15,17.67,20.19,17.67a52.11,52.11,0,0,0,11.89-1.68V95a24.84,24.84,0,0,1-7.68,1.16c-5.37,0-7.36-1.68-7.36-6.73V68.3h15.56V54.1H596.78v-18l-17,3.68V54.1H568.49V68.3h11.25Zm-53,.32c0-3.68,3.69-5.47,9.26-5.47a43.12,43.12,0,0,1,10.1,1.26v7.15a21.51,21.51,0,0,1-10.63,2.63c-5.46,0-8.73-2.1-8.73-5.57m5.2,17.56c6,0,10.84-1.26,15.36-4.31v3.37h16.82V74.08c0-13.56-9.14-21-24.39-21-8.52,0-16.94,2-26,6.1l6.1,12.52c6.52-2.74,12-4.42,16.83-4.42,7,0,10.62,2.73,10.62,8.31v2.73a49.53,49.53,0,0,0-12.62-1.58c-14.31,0-22.93,6-22.93,16.73,0,9.78,7.78,17.24,20.19,17.24m-92.44-.94h18.09V80.92h30.29v28.82H506V36.12H487.93V64.41H457.64V36.12H439.55ZM370.62,81.87c0-8,6.31-14.1,14.62-14.1A17.22,17.22,0,0,1,397,72.09V91.54A16.36,16.36,0,0,1,385.24,96c-8.2,0-14.62-6.1-14.62-14.09m26.61,27.87h16.83V32.44l-17,3.68V57.05a28.3,28.3,0,0,0-14.2-3.68c-16.19,0-28.92,12.51-28.92,28.5a28.25,28.25,0,0,0,28.4,28.6,25.12,25.12,0,0,0,14.93-4.83ZM320,67c5.36,0,9.88,3.47,11.67,8.83H308.47C310.15,70.3,314.36,67,320,67M291.33,82c0,16.2,13.25,28.82,30.28,28.82,9.36,0,16.2-2.53,23.25-8.42l-11.26-10c-2.63,2.74-6.52,4.21-11.14,4.21a14.39,14.39,0,0,1-13.68-8.83h39.65V83.55c0-17.67-11.88-30.39-28.08-30.39a28.57,28.57,0,0,0-29,28.81M262,51.58c6,0,9.36,3.78,9.36,8.31S268,68.2,262,68.2H244.11V51.58Zm-36,58.16h18.09V82.92h13.77l13.89,26.82H292l-16.2-29.45a22.27,22.27,0,0,0,13.88-20.72c0-13.25-10.41-23.45-26-23.45H226Z" fill="#fff"/></svg>
+        <span>› Infrastructure Foundations</span>
+      </div>
+      <div class="tag-container animate-in">
+        <span class="tag">Git 101</span>
+        <span class="tag">YAML 101</span>
+        <span class="tag">DevOps Culture</span>
+      </div>
+      <h1 class="animate-in">The Foundation of <br><span class="accent-text">Modern Infrastructure</span></h1>
+      <p class="subtitle animate-in">Mastering the toolset for automation, configuration, and collaborative engineering.</p>
+    </div>
+
+    <!-- SLIDE 2: IaC & DEVOPS -->
+    <div class="slide" data-notes="<h3>Infrastructure as Code</h3>Explain that YAML is the 'what' and Git is the 'history'. In DevOps, we treat infrastructure like software.">
+      <img class="rh-icon accent animate-in" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/automation.svg" alt="">
+      <h2 class="animate-in">Infrastructure as Code is <span class="accent-text">a Mindset</span></h2>
+      <div class="content-grid">
+        <div class="animate-in">
+          <ul>
+            <li><strong>Consistency:</strong> Provision the exact same environment every time.</li>
+            <li><strong>Speed:</strong> Automation replaces 100-click manual GUI processes.</li>
+            <li><strong>Safety:</strong> Version control enables immediate rollbacks.</li>
+          </ul>
+        </div>
+        <div class="animate-in">
+          <div class="code-block">
+# Manual: 100 GUI clicks
+# IaC: 1 file, 1 command
+$ oc create -f infra.yaml</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: YAML INTRO -->
+    <div class="slide" data-notes="YAML is for data, not documents. It defines the 'Desired State' of your system.">
+      <img class="rh-icon animate-in" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/code.svg" alt="">
+      <h2 class="animate-in">YAML: The Language of <span class="accent-text">Configuration</span></h2>
+      <div class="content-grid animate-in">
+        <div>
+          <ul>
+            <li><strong>Key-Value Pairs:</strong> Connects name to value.</li>
+            <li><strong>Lists:</strong> Defines ordered collections.</li>
+            <li><strong>Booleans:</strong> Simple true/false toggles.</li>
+          </ul>
+        </div>
+        <div class="code-block">
+kind: AgentConfig
+metadata:
+  name: example
+fips: true</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: YAML SYNTAX -->
+    <div class="slide" data-notes="Indentation is the golden rule. No tabs allowed.">
+      <h2 class="animate-in">The Golden Rule: <span class="accent-text">Indentation Matters</span></h2>
+      <div class="content-grid">
+        <div class="animate-in">
+          <ul>
+            <li><strong>2 Spaces:</strong> Each nesting level MUST be 2 spaces.</li>
+            <li><strong>No Tabs:</strong> Tabs break YAML parsing.</li>
+            <li><strong>Alignment:</strong> Elements at the same level must align vertically.</li>
+          </ul>
+        </div>
+        <div class="animate-in">
+          <div class="code-block">
+interfaces:
+  - name: ens3      # List item
+    mac: "52:..."   # Indented 2 spaces
+  - name: ens4      # Aligned item</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: GIT INTRO & AREAS -->
+    <div class="slide" data-notes="<h3>The Git Lifecycle</h3>This diagram explains the four areas of Git. Work is done in the directory, staged in the index, saved in the local repo, and shared via the remote.">
+      <img class="rh-icon accent animate-in" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/git.svg" alt="Git Icon">
+      <h2 class="animate-in">Git: The <span class="accent-text">Source of Truth</span></h2>
+      
+      <div class="diagram-container animate-in">
+        <div class="diagram-node">
+          <span>Your PC</span>
+          <strong>Working Dir</strong>
+        </div>
+        <div class="diagram-arrow">add →</div>
+        <div class="diagram-node">
+          <span>Prep Area</span>
+          <strong>Staging</strong>
+        </div>
+        <div class="diagram-arrow">commit →</div>
+        <div class="diagram-node accent">
+          <span>Local DB</span>
+          <strong>Local Repo</strong>
+        </div>
+        <div class="diagram-arrow">push →</div>
+        <div class="diagram-node">
+          <span>Server</span>
+          <strong>Remote Repo</strong>
+        </div>
+      </div>
+      
+      <p class="subtitle animate-in" style="margin-top: 2rem; font-size: 1rem;">
+        Everything you write (YAML) must be stored here. If it isn't in Git, it doesn't exist.
+      </p>
+    </div>
+
+    <!-- SLIDE 6: GIT COMMANDS -->
+    <div class="slide" data-notes="The daily workflow cycle.">
+      <h2 class="animate-in">The Engine: <span class="accent-text">Daily Workflow</span></h2>
+      <div class="animate-in">
+        <div class="code-block">
+$ git clone [url]    # Get the repo
+$ git status         # See what changed
+$ git add .          # Stage all changes
+$ git commit -m ".." # Save snapshot
+$ git push           # Upload to origin</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: BRANCHING DIAGRAM -->
+    <div class="slide" data-notes="<h3>Branching Workflow</h3>Never work on 'main'. Create a feature branch (the red line), do your work, then merge it back via a Pull Request.">
+      <h2 class="animate-in">Collaboration via <span class="accent-text">Branching</span></h2>
+      
+      <div class="branch-diagram animate-in">
+        <div class="branch-line"></div>
+        <div class="commit-dot" style="left: 10%;"></div>
+        <div class="commit-dot" style="left: 20%;"></div>
+        
+        <!-- Feature Branch -->
+        <div class="feature-curve-start"></div>
+        <div class="feature-line"></div>
+        <div class="commit-dot accent" style="left: 40%; top: 15%;"></div>
+        <div class="commit-dot accent" style="left: 60%; top: 15%;"></div>
+        <div class="feature-curve-end"></div>
+        
+        <div class="commit-dot" style="left: 80%;"></div>
+        
+        <div style="position: absolute; left: 10%; top: 65%; font-family: var(--font-mono); font-size: 0.7rem;">MAIN</div>
+        <div style="position: absolute; left: 40%; top: 0%; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent);">FEATURE BRANCH (Dev Work)</div>
+      </div>
+
+      <div class="content-grid animate-in" style="margin-top: 1rem;">
+        <div>
+          <ul>
+            <li><strong>Main:</strong> Stable production code.</li>
+            <li><strong>Feature:</strong> Where you safely experiment.</li>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li><strong>Pull Request (PR):</strong> Peer review gate.</li>
+            <li><strong>Merge:</strong> Integrating back to the truth.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: THANK YOU -->
+    <div class="slide">
+      <h1 style="text-align: center;"><span class="accent-text">Thank</span> You</h1>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 3rem;">Ready to start your first commit?</p>
+      <div style="text-align: center;">
+        <svg class="rh-logo small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 613 145"><path d="M127.47,83.49c12.51,0,30.61-2.58,30.61-17.46a14,14,0,0,0-.31-3.42l-7.45-32.36c-1.72-7.12-3.23-10.35-15.73-16.6C124.89,8.69,103.76.5,97.51.5,91.69.5,90,8,83.06,8c-6.68,0-11.64-5.6-17.89-5.6-6,0-9.91,4.09-12.93,12.5,0,0-8.41,23.72-9.49,27.16A6.43,6.43,0,0,0,42.53,44c0,9.22,36.3,39.45,84.94,39.45M160,72.07c1.73,8.19,1.73,9.05,1.73,10.13,0,14-15.74,21.77-36.43,21.77C78.54,104,37.58,76.6,37.58,58.49a18.45,18.45,0,0,1,1.51-7.33C22.27,52,.5,55,.5,74.22c0,31.48,74.59,70.28,133.65,70.28,45.28,0,56.7-20.48,56.7-36.65,0-12.72-11-27.16-30.83-35.78" fill="#e00"/><path d="M160,72.07c1.73,8.19,1.73,9.05,1.73,10.13,0,14-15.74,21.77-36.43,21.77C78.54,104,37.58,76.6,37.58,58.49a18.45,18.45,0,0,1,1.51-7.33l3.66-9.06A6.43,6.43,0,0,0,42.53,44c0,9.22,36.3,39.45,84.94,39.45,12.51,0,30.61-2.58,30.61-17.46a14,14,0,0,0-.31-3.42Z" fill="#fff"/><path d="M579.74,92.8c0,11.89,7.15,17.67,20.19,17.67a52.11,52.11,0,0,0,11.89-1.68V95a24.84,24.84,0,0,1-7.68,1.16c-5.37,0-7.36-1.68-7.36-6.73V68.3h15.56V54.1H596.78v-18l-17,3.68V54.1H568.49V68.3h11.25Zm-53,.32c0-3.68,3.69-5.47,9.26-5.47a43.12,43.12,0,0,1,10.1,1.26v7.15a21.51,21.51,0,0,1-10.63,2.63c-5.46,0-8.73-2.1-8.73-5.57m5.2,17.56c6,0,10.84-1.26,15.36-4.31v3.37h16.82V74.08c0-13.56-9.14-21-24.39-21-8.52,0-16.94,2-26,6.1l6.1,12.52c6.52-2.74,12-4.42,16.83-4.42,7,0,10.62,2.73,10.62,8.31v2.73a49.53,49.53,0,0,0-12.62-1.58c-14.31,0-22.93,6-22.93,16.73,0,9.78,7.78,17.24,20.19,17.24m-92.44-.94h18.09V80.92h30.29v28.82H506V36.12H487.93V64.41H457.64V36.12H439.55ZM370.62,81.87c0-8,6.31-14.1,14.62-14.1A17.22,17.22,0,0,1,397,72.09V91.54A16.36,16.36,0,0,1,385.24,96c-8.2,0-14.62-6.1-14.62-14.09m26.61,27.87h16.83V32.44l-17,3.68V57.05a28.3,28.3,0,0,0-14.2-3.68c-16.19,0-28.92,12.51-28.92,28.5a28.25,28.25,0,0,0,28.4,28.6,25.12,25.12,0,0,0,14.93-4.83ZM320,67c5.36,0,9.88,3.47,11.67,8.83H308.47C310.15,70.3,314.36,67,320,67M291.33,82c0,16.2,13.25,28.82,30.28,28.82,9.36,0,16.2-2.53,23.25-8.42l-11.26-10c-2.63,2.74-6.52,4.21-11.14,4.21a14.39,14.39,0,0,1-13.68-8.83h39.65V83.55c0-17.67-11.88-30.39-28.08-30.39a28.57,28.57,0,0,0-29,28.81M262,51.58c6,0,9.36,3.78,9.36,8.31S268,68.2,262,68.2H244.11V51.58Zm-36,58.16h18.09V82.92h13.77l13.89,26.82H292l-16.2-29.45a22.27,22.27,0,0,0,13.88-20.72c0-13.25-10.41-23.45-26-23.45H226Z" fill="#fff"/></svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDE PANEL: NOTES & ✨ AI ASSISTANT -->
+  <div class="side-panel">
+    <div class="panel-tabs">
+      <div class="panel-tab active" onclick="switchTab('notes')">Notes</div>
+      <div class="panel-tab" onclick="switchTab('ai')">✨ Assistant</div>
+    </div>
+    
+    <!-- NOTES VIEW -->
+    <div id="notes-view" class="panel-content active">
+      <div id="notes-content"></div>
+    </div>
+
+    <!-- ✨ AI ASSISTANT VIEW -->
+    <div id="ai-view" class="panel-content">
+      <h3>✨ AI Slide Assistant</h3>
+      <div class="ai-tool-grid">
+        <button class="ai-btn" onclick="aiSummarize()">✨ Summarize</button>
+        <button class="ai-btn" onclick="aiQuiz()">✨ Quiz Me</button>
+      </div>
+      
+      <div class="chat-container">
+        <div id="chat-messages" class="chat-messages">
+          <div class="msg ai">Hello! I'm your Red Hat Assistant. How can I help you master Git & YAML today?</div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" id="user-input" class="chat-input" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') sendMessage()">
+          <button class="ai-btn" onclick="sendMessage()" id="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="nav-hint">← → or click to navigate · N for context</div>
+    <div class="progress"><span class="current">1</span> / <span class="total">1</span></div>
+  </div>
+
+  <script>
+    const apiKey = ""; // Runtime handled
+
+    (function() {
+      const slides = document.querySelectorAll('.slide');
+      const currentEl = document.querySelector('.current');
+      const totalEl = document.querySelector('.total');
+      const sidePanel = document.querySelector('.side-panel');
+      const notesContent = document.getElementById('notes-content');
+      let idx = 0;
+      let panelVisible = false;
+
+      totalEl.textContent = slides.length;
+
+      function show(i) {
+        slides.forEach((s, j) => {
+          s.classList.toggle('active', j === i);
+          s.style.display = j === i ? 'flex' : 'none';
+        });
+        currentEl.textContent = i + 1;
+        notesContent.innerHTML = slides[i].dataset.notes || '<h3>No additional notes</h3>';
+      }
+
+      function next() { if (idx < slides.length - 1) { idx++; show(idx); } }
+      function prev() { if (idx > 0) { idx--; show(idx); } }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+        if (e.key === 'ArrowLeft') { prev(); }
+        if (e.key === 'n' || e.key === 'N') {
+          panelVisible = !panelVisible;
+          sidePanel.classList.toggle('visible', panelVisible);
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.controls') || e.target.closest('.side-panel')) return;
+        const x = e.clientX / window.innerWidth;
+        x > 0.5 ? next() : prev();
+      });
+
+      show(0);
+      window.currentSlideIdx = () => idx;
+    })();
+
+    function switchTab(tab) {
+      document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel-content').forEach(c => c.classList.remove('active'));
+      
+      if (tab === 'notes') {
+        document.querySelector('.panel-tab:nth-child(1)').classList.add('active');
+        document.getElementById('notes-view').classList.add('active');
+      } else {
+        document.querySelector('.panel-tab:nth-child(2)').classList.add('active');
+        document.getElementById('ai-view').classList.add('active');
+      }
+    }
+
+    /* === GEMINI API INTEGRATION === */
+    
+    async function callGemini(prompt, systemPrompt) {
+      let retries = 0;
+      const maxRetries = 5;
+      
+      while (retries <= maxRetries) {
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              systemInstruction: { parts: [{ text: systemPrompt }] }
+            })
+          });
+
+          if (!response.ok) throw new Error('API Error');
+          const data = await response.json();
+          return data.candidates?.[0]?.content?.parts?.[0]?.text;
+        } catch (e) {
+          if (retries === maxRetries) throw e;
+          const delay = Math.pow(2, retries) * 1000;
+          await new Promise(r => setTimeout(r, delay));
+          retries++;
+        }
+      }
+    }
+
+    function appendMsg(text, type) {
+      const chat = document.getElementById('chat-messages');
+      const msg = document.createElement('div');
+      msg.className = `msg ${type}`;
+      msg.innerHTML = text.replace(/\n/g, '<br>');
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
+      return msg;
+    }
+
+    async function aiSummarize() {
+      const idx = window.currentSlideIdx();
+      const slide = document.querySelectorAll('.slide')[idx];
+      const content = slide.innerText;
+      const notes = slide.dataset.notes;
+      
+      const btn = document.querySelector('[onclick="aiSummarize()"]');
+      btn.disabled = true;
+      const loader = appendMsg("✨ Thinking...", "ai");
+
+      try {
+        const summary = await callGemini(
+          `Slide Content: ${content}\nSpeaker Notes: ${notes}`,
+          "You are a Red Hat technical expert. Provide a one-sentence high-impact summary of this slide. Focus on the core 'Infrastructure as Code' benefit."
+        );
+        loader.innerHTML = `<strong>✨ Summary:</strong><br>${summary}`;
+      } catch (err) {
+        loader.innerHTML = "❌ Failed to generate summary. Please try again.";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function aiQuiz() {
+      const allContent = Array.from(document.querySelectorAll('.slide')).map(s => s.innerText).join('\n');
+      const btn = document.querySelector('[onclick="aiQuiz()"]');
+      btn.disabled = true;
+      const loader = appendMsg("✨ Generating a quick quiz...", "ai");
+
+      try {
+        const quiz = await callGemini(
+          `Deck Content: ${allContent}`,
+          "Generate 2 multiple-choice questions based on the deck content (Git and YAML). Provide the answers hidden at the bottom."
+        );
+        loader.innerHTML = `<strong>✨ Quiz:</strong><br>${quiz}`;
+      } catch (err) {
+        loader.innerHTML = "❌ Error generating quiz.";
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('user-input');
+      const query = input.value.trim();
+      if (!query) return;
+
+      appendMsg(query, "user");
+      input.value = "";
+      
+      const loader = appendMsg("✨ Assistant is typing...", "ai");
+      
+      try {
+        const reply = await callGemini(
+          query,
+          "You are a helpful Red Hat technical assistant teaching newcomers about Git and YAML foundations. Keep answers concise, helpful, and technically accurate according to the uploaded files."
+        );
+        loader.innerHTML = reply;
+      } catch (err) {
+        loader.innerHTML = "❌ I'm having trouble connecting to the brain right now.";
+      }
+    }
+  </script>
+</body>
+</html>
