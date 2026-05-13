@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Foundations of Git & YAML</title>
+  <title>Infrastructure as Code: Foundations</title>
   <!-- Red Hat Design Tokens -->
   <link href="https://cdn.jsdelivr.net/npm/@rhds/tokens@3.0.2/css/global.min.css" rel="stylesheet">
   <!-- Google Fonts -->
@@ -158,16 +158,21 @@
     .diagram-node {
       background: rgba(242,242,242,0.8);
       border: 1px solid var(--tag-border);
-      padding: var(--rh-space-lg, 24px);
+      padding: var(--rh-space-lg, 24px) var(--rh-space-md, 16px);
       border-radius: 4px;
       text-align: center;
-      width: 20%;
+      width: 22%;
       box-shadow: var(--rh-box-shadow-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .diagram-node.accent { border-color: var(--accent); background: #ffffff; }
+    .diagram-node .rh-icon { margin-bottom: 8px; height: 32px; width: 32px; filter: var(--icon-filter); }
+    .diagram-node.accent .rh-icon { filter: var(--icon-filter-accent); }
     .diagram-node span { display: block; font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; }
     .diagram-node strong { font-family: var(--font-heading); font-size: 1.1rem; }
-    .diagram-arrow { color: var(--accent); font-size: 1.5rem; font-weight: bold; }
+    .diagram-arrow { color: var(--accent); font-size: 1.1rem; font-weight: bold; }
 
     .branch-diagram { position: relative; height: 150px; width: 100%; margin: 2rem 0; display: flex; align-items: center; justify-content: center; z-index: 1;}
     .branch-line { position: absolute; height: 2px; background: var(--tag-border); width: 80%; top: 50%; z-index: 0;}
@@ -306,156 +311,178 @@
         <span>› Infrastructure Foundations</span>
       </div>
       <div class="tag-container animate-in">
-        <span class="tag">Git 101</span>
-        <span class="tag">YAML 101</span>
-        <span class="tag">DevOps Culture</span>
+        <span class="tag">Infrastructure as Code</span>
+        <span class="tag">YAML</span>
+        <span class="tag">Git</span>
       </div>
-      <h1 class="animate-in">The Foundation of <br><span class="accent-text">Modern Infrastructure</span></h1>
-      <p class="subtitle animate-in">Mastering the toolset for automation, configuration, and collaborative engineering.</p>
+      <h1 class="animate-in">Infrastructure as Code: <br><span class="accent-text">Foundations</span></h1>
+      <p class="subtitle animate-in">Mastering YAML and Git to treat your infrastructure like software.</p>
     </div>
 
     <!-- SLIDE 2: IaC & DEVOPS -->
-    <div class="slide" data-notes="<h3>Infrastructure as Code</h3>Explain that YAML is the 'what' and Git is the 'history'. In DevOps, we treat infrastructure like software.">
+    <div class="slide" data-notes="<h3>Infrastructure as Code</h3>Explain that YAML is the 'what' and Git is the 'history'. Real IaC provides teeth: disaster recovery in minutes and perfect auditability.">
       <img class="rh-icon accent animate-in" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/automation.svg" alt="">
       <h2 class="animate-in">Infrastructure as Code is <span class="accent-text">a Mindset</span></h2>
-      <div class="content-grid">
-        <div class="animate-in">
-          <ul>
-            <li><strong>Consistency:</strong> Provision the exact same environment every time.</li>
-            <li><strong>Speed:</strong> Automation replaces 100-click manual GUI processes.</li>
-            <li><strong>Safety:</strong> Version control enables immediate rollbacks.</li>
-          </ul>
-        </div>
-        <div class="animate-in">
-          <div class="code-block">
-# Manual: 100 GUI clicks
-# IaC: 1 file, 1 command
-$ oc create -f infra.yaml</div>
-        </div>
+      <div class="animate-in" style="max-width: 900px;">
+        <ul>
+          <li><strong>Disaster Recovery:</strong> Rebuild lost environments in minutes, not days.</li>
+          <li><strong>Auditability:</strong> Every infra change is tracked, approved, and reversible.</li>
+          <li><strong>Scalability:</strong> Deploying 100 clusters takes the same effort as deploying one.</li>
+        </ul>
       </div>
     </div>
 
     <!-- SLIDE 3: YAML INTRO -->
-    <div class="slide" data-notes="YAML is for data, not documents. It defines the 'Desired State' of your system.">
+    <div class="slide" data-notes="YAML is a data serialization language, not a programming language. It defines the 'Desired State' of your system without logic or loops.">
       <img class="rh-icon animate-in" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/ui/code.svg" alt="">
       <h2 class="animate-in">YAML: The Language of <span class="accent-text">Configuration</span></h2>
       <div class="content-grid animate-in">
         <div>
+          <h3 style="margin-bottom: 1rem; font-family: var(--font-heading); font-size: 1.25rem;">What it IS</h3>
           <ul>
-            <li><strong>Key-Value Pairs:</strong> Connects name to value.</li>
-            <li><strong>Lists:</strong> Defines ordered collections.</li>
-            <li><strong>Booleans:</strong> Simple true/false toggles.</li>
+            <li><strong>Data Serialization:</strong> Stores data in a human-readable format.</li>
+            <li><strong>Declarative:</strong> Defines the <em>desired state</em> (the "what", not the "how").</li>
           </ul>
         </div>
-        <div class="code-block">
-kind: AgentConfig
-metadata:
-  name: example
-fips: true</div>
+        <div>
+          <h3 style="margin-bottom: 1rem; font-family: var(--font-heading); font-size: 1.25rem;">What it ISN'T</h3>
+          <ul>
+            <li><strong>No Logic:</strong> No variables, loops, or conditionals natively.</li>
+            <li><strong>Not a Script:</strong> It doesn't "execute" actions on its own.</li>
+          </ul>
+        </div>
       </div>
     </div>
 
     <!-- SLIDE 4: YAML SYNTAX -->
-    <div class="slide" data-notes="Indentation is the golden rule. No tabs allowed.">
+    <div class="slide" data-notes="Indentation is the golden rule. Consistency is key for parsing.">
       <h2 class="animate-in">The Golden Rule: <span class="accent-text">Indentation Matters</span></h2>
       <div class="content-grid">
         <div class="animate-in">
           <ul>
-            <li><strong>2 Spaces:</strong> Each nesting level MUST be 2 spaces.</li>
-            <li><strong>No Tabs:</strong> Tabs break YAML parsing.</li>
-            <li><strong>Alignment:</strong> Elements at the same level must align vertically.</li>
+            <li><strong>Consistency:</strong> Choose a standard indentation level across your team and stick to it.</li>
+            <li><strong>Formatting:</strong> Maintain uniform spacing to ensure reliable parsing across platforms.</li>
+            <li><strong>Alignment:</strong> Elements at the same hierarchical level must align vertically.</li>
           </ul>
         </div>
         <div class="animate-in">
           <div class="code-block">
-interfaces:
-  - name: ens3      # List item
-    mac: "52:..."   # Indented 2 spaces
-  - name: ens4      # Aligned item</div>
+apiVersion: v1beta1
+kind: AgentConfig
+metadata:
+  name: example.lab
+rendezvousIP: 192.168.122.10
+hosts:
+  - hostname: sno
+    rootDeviceHints:
+      deviceName: "/dev/sda"
+    interfaces:
+      - name: ens3
+        macAddress: 52:54:00:d2:2a:66</div>
         </div>
       </div>
     </div>
 
     <!-- SLIDE 5: GIT INTRO & AREAS -->
-    <div class="slide" data-notes="<h3>The Git Lifecycle</h3>This diagram explains the four areas of Git. Work is done in the directory, staged in the index, saved in the local repo, and shared via the remote.">
+    <div class="slide" data-notes="<h3>The Core Workflow</h3>This is the core of Git. Break down exactly what happens at each step. Emphasize that Git doesn't automatically save everything; you have to intentionally select (stage) and snapshot (commit) your work before sharing (push).">
       <svg class="rh-icon accent animate-in" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor">
         <path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/>
       </svg>
-      <h2 class="animate-in">Git: The <span class="accent-text">Source of Truth</span></h2>
+      <h2 class="animate-in">Git: The <span class="accent-text">Core Workflow</span></h2>
       
-      <div class="diagram-container animate-in">
-        <div class="diagram-node">
-          <span>Your PC</span>
-          <strong>Working Dir</strong>
+      <div class="diagram-container animate-in" style="align-items: stretch;">
+        <div class="diagram-node" style="width: 22%; justify-content: flex-start;">
+          <img class="rh-icon" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/laptop.svg" alt="">
+          <span>1. Working Dir</span>
+          <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Your local files. Where you actively create, edit, and test your code.</p>
         </div>
-        <div class="diagram-arrow">add →</div>
-        <div class="diagram-node">
-          <span>Prep Area</span>
-          <strong>Staging</strong>
+        <div class="diagram-arrow" style="align-self: center;">git add →</div>
+        <div class="diagram-node" style="width: 22%; justify-content: flex-start;">
+          <img class="rh-icon" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/checklist.svg" alt="">
+          <span>2. Staging Area</span>
+          <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">The prep zone. Intentionally select which specific changes go into the next save.</p>
         </div>
-        <div class="diagram-arrow">commit →</div>
-        <div class="diagram-node accent">
-          <span>Local DB</span>
-          <strong>Local Repo</strong>
+        <div class="diagram-arrow" style="align-self: center;">git commit →</div>
+        <div class="diagram-node accent" style="width: 22%; justify-content: flex-start;">
+          <img class="rh-icon" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/data.svg" alt="">
+          <span>3. Local Repo</span>
+          <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">Your local database. Saves a permanent historical "snapshot" of staged changes.</p>
         </div>
-        <div class="diagram-arrow">push →</div>
-        <div class="diagram-node">
-          <span>Server</span>
-          <strong>Remote Repo</strong>
+        <div class="diagram-arrow" style="align-self: center;">git push →</div>
+        <div class="diagram-node" style="width: 22%; justify-content: flex-start;">
+          <img class="rh-icon" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/cloud.svg" alt="">
+          <span>4. Remote Repo</span>
+          <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">The central server (e.g., GitHub). Acts as the team's shared source of truth.</p>
         </div>
       </div>
       
-      <p class="subtitle animate-in" style="margin-top: 2rem; font-size: 1rem;">
-        Everything you write (YAML) must be stored here. If it isn't in Git, it doesn't exist.
+      <p class="subtitle animate-in" style="margin-top: 2.5rem; font-size: 1.1rem; max-width: 100%;">
+        <strong>No Auto-Saves:</strong> Git requires explicit actions. You must tell it what to stage, when to commit, and when to share.
       </p>
     </div>
 
-    <!-- SLIDE 6: GIT COMMANDS -->
-    <div class="slide" data-notes="The daily workflow cycle.">
-      <h2 class="animate-in">The Engine: <span class="accent-text">Daily Workflow</span></h2>
-      <div class="animate-in">
-        <div class="code-block">
-$ git clone [url]    # Get the repo
-$ git status         # See what changed
-$ git add .          # Stage all changes
-$ git commit -m ".." # Save snapshot
-$ git push           # Upload to origin</div>
-      </div>
-    </div>
-
-    <!-- SLIDE 7: BRANCHING DIAGRAM -->
-    <div class="slide" data-notes="<h3>Branching Workflow</h3>Never work on 'main'. Create a feature branch (the red line), do your work, then merge it back via a Pull Request.">
-      <h2 class="animate-in">Collaboration via <span class="accent-text">Branching</span></h2>
+    <!-- SLIDE 6: BRANCHING DIAGRAM -->
+    <div class="slide" data-notes="<h3>Environment Branch Workflow</h3>Instead of short-lived feature branches, many infrastructure teams use long-lived branches that map directly to environments (Dev, QA, Prod). Because these environments have distinct configurations, they are managed as isolated branches rather than a continuous promotion pipeline.">
+      <h2 class="animate-in">Scaling to Environments: <span class="accent-text">Long-Lived Branches</span></h2>
       
-      <div class="branch-diagram animate-in">
-        <div class="branch-line"></div>
-        <div class="commit-dot" style="left: 10%;"></div>
-        <div class="commit-dot" style="left: 20%;"></div>
+      <div class="branch-diagram animate-in" style="height: 180px; align-items: flex-start;">
+        <!-- DEV Branch -->
+        <div style="position: absolute; left: 10%; top: 15%; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent);">DEV</div>
+        <div class="branch-line" style="top: 25%; background: var(--accent);"></div>
+        <div class="commit-dot accent" style="left: 20%; top: calc(25% - 7px);"></div>
+        <div class="commit-dot accent" style="left: 45%; top: calc(25% - 7px);"></div>
+
+        <!-- QA Branch -->
+        <div style="position: absolute; left: 10%; top: 45%; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-secondary);">QA</div>
+        <div class="branch-line" style="top: 55%; background: var(--text-secondary);"></div>
+        <div class="commit-dot" style="left: 30%; top: calc(55% - 7px); background: var(--text-secondary);"></div>
+        <div class="commit-dot" style="left: 60%; top: calc(55% - 7px); background: var(--text-secondary);"></div>
         
-        <!-- Feature Branch -->
-        <div class="feature-curve-start"></div>
-        <div class="feature-line"></div>
-        <div class="commit-dot accent" style="left: 40%; top: 15%;"></div>
-        <div class="commit-dot accent" style="left: 60%; top: 15%;"></div>
-        <div class="feature-curve-end"></div>
-        
-        <div class="commit-dot" style="left: 80%;"></div>
-        
-        <div style="position: absolute; left: 10%; top: 65%; font-family: var(--font-mono); font-size: 0.7rem;">MAIN</div>
-        <div style="position: absolute; left: 40%; top: 0%; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent);">FEATURE BRANCH (Dev Work)</div>
+        <!-- PROD Branch -->
+        <div style="position: absolute; left: 10%; top: 75%; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-primary);">PROD</div>
+        <div class="branch-line" style="top: 85%; background: var(--text-primary);"></div>
+        <div class="commit-dot" style="left: 50%; top: calc(85% - 7px); background: var(--text-primary);"></div>
+        <div class="commit-dot" style="left: 75%; top: calc(85% - 7px); background: var(--text-primary);"></div>
       </div>
 
       <div class="content-grid animate-in" style="margin-top: 1rem;">
         <div>
           <ul>
-            <li><strong>Main:</strong> Stable production code.</li>
-            <li><strong>Feature:</strong> Where you safely experiment.</li>
+            <li><strong>Environment Isolation:</strong> Enviornment configurations are managed independently per branch.</li>
+            <li><strong>Mapped to Infrastructure:</strong> Branches directly reflect the expected state of an environment.</li>
           </ul>
         </div>
         <div>
           <ul>
-            <li><strong>Pull Request (PR):</strong> Peer review gate.</li>
-            <li><strong>Merge:</strong> Integrating back to the truth.</li>
+            <li><strong>Pull Requests (PRs):</strong> The safe way to propose and merge targeted changes.</li>
+            <li><strong>Review Gates:</strong> PRs ensure all code is reviewed and approved by the team before moving forward.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: RECAP & NEXT STEPS -->
+    <div class="slide" data-notes="<h3>Wrapping Up & Next Steps</h3>We've built a solid foundation with YAML and Git. Looking ahead, we will introduce OpenShift GitOps. We'll cover how to use OpenShift GitOps to automatically apply the declarative content stored in Git directly to your OpenShift clusters.">
+      <h2 class="animate-in">Recap & <span class="accent-text">Looking Ahead</span></h2>
+      <p class="subtitle animate-in">Bridging the gap between your code and your cluster.</p>
+      
+      <div class="content-grid animate-in" style="margin-top: 1rem;">
+        <div style="background: var(--bg-secondary); border: 1px solid var(--tag-border); padding: var(--rh-space-xl, 32px); border-radius: 4px;">
+          <img class="rh-icon" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/checklist.svg" alt="" style="margin-bottom: 1rem;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem;">The Foundation</h3>
+          <ul>
+            <li><strong>IaC Mindset:</strong> Infrastructure as code for recovery, auditability, and scale.</li>
+            <li><strong>YAML Syntax:</strong> Defining your desired state clearly and consistently.</li>
+            <li><strong>Git Workflows:</strong> Version control, branch isolation, and team collaboration.</li>
+          </ul>
+        </div>
+        <div style="background: #ffffff; border: 1px solid var(--accent); padding: var(--rh-space-xl, 32px); border-radius: 4px; box-shadow: var(--rh-box-shadow-sm);">
+          <img class="rh-icon accent" src="https://cdn.jsdelivr.net/npm/@rhds/icons@2.1.0/standard/automation.svg" alt="" style="margin-bottom: 1rem;">
+          <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent);">What's Next</h3>
+          <ul>
+            <li><strong>OpenShift GitOps:</strong> The engine that bridges your repository and your cluster.</li>
+            <li><strong>Applying Content:</strong> Use OpenShift GitOps to apply content in Git directly to OpenShift.</li>
+            <li><strong>Continuous State:</strong> Ensuring your running infrastructure always matches your source of truth.</li>
           </ul>
         </div>
       </div>
